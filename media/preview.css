@@ -1,0 +1,310 @@
+/* Styled from VS Code webview theme variables so it tracks the active colour theme. */
+:root {
+  --ir-gap: 16px;
+}
+
+body {
+  margin: 0;
+  padding: 0 0 40vh 0;
+  font-family: var(--vscode-markdown-font-family, var(--vscode-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif));
+  font-size: var(--vscode-markdown-font-size, 14px);
+  line-height: var(--vscode-markdown-line-height, 1.6);
+  color: var(--vscode-foreground);
+  background: var(--vscode-editor-background);
+}
+
+#toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: var(--vscode-editor-background);
+  border-bottom: 1px solid var(--vscode-panel-border, rgba(128, 128, 128, 0.35));
+}
+
+#count {
+  margin-left: auto;
+  opacity: 0.7;
+  font-size: 12px;
+}
+
+button {
+  font-family: inherit;
+  font-size: 12px;
+  padding: 3px 10px;
+  border: 1px solid var(--vscode-button-border, transparent);
+  border-radius: 4px;
+  color: var(--vscode-button-secondaryForeground, var(--vscode-foreground));
+  background: var(--vscode-button-secondaryBackground, rgba(128, 128, 128, 0.18));
+  cursor: pointer;
+}
+button:hover { background: var(--vscode-button-secondaryHoverBackground, rgba(128, 128, 128, 0.3)); }
+button.primary {
+  color: var(--vscode-button-foreground);
+  background: var(--vscode-button-background);
+}
+button.primary:hover { background: var(--vscode-button-hoverBackground); }
+
+#content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 48px;
+}
+
+/* ---- markdown ---- */
+#content h1, #content h2, #content h3, #content h4 {
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 1.6em 0 0.6em;
+}
+#content h1 { font-size: 1.9em; }
+#content h2 {
+  font-size: 1.45em;
+  padding-bottom: 0.25em;
+  border-bottom: 1px solid var(--vscode-panel-border, rgba(128, 128, 128, 0.3));
+}
+#content h3 { font-size: 1.2em; }
+#content p, #content ul, #content ol, #content table, #content blockquote { margin: 0 0 var(--ir-gap); }
+#content a { color: var(--vscode-textLink-foreground); text-decoration: none; }
+#content a:hover { text-decoration: underline; }
+#content code {
+  font-family: var(--vscode-editor-font-family, monospace);
+  font-size: 0.9em;
+  padding: 0.15em 0.35em;
+  border-radius: 3px;
+  background: var(--vscode-textCodeBlock-background, rgba(128, 128, 128, 0.17));
+}
+#content pre {
+  margin: 0 0 var(--ir-gap);
+  padding: 12px 14px;
+  overflow: auto;
+  border-radius: 6px;
+  background: var(--vscode-textCodeBlock-background, rgba(128, 128, 128, 0.12));
+}
+#content pre code { padding: 0; background: none; }
+#content blockquote {
+  padding: 0 1em;
+  border-left: 3px solid var(--vscode-textBlockQuote-border, rgba(128, 128, 128, 0.5));
+  background: var(--vscode-textBlockQuote-background, transparent);
+  opacity: 0.9;
+}
+#content table { border-collapse: collapse; }
+#content th, #content td {
+  padding: 5px 12px;
+  border: 1px solid var(--vscode-panel-border, rgba(128, 128, 128, 0.35));
+}
+#content th { background: rgba(128, 128, 128, 0.12); }
+#content img { max-width: 100%; }
+#content hr { border: none; border-top: 1px solid var(--vscode-panel-border, rgba(128, 128, 128, 0.35)); }
+
+/* highlight.js — mapped onto editor token colours */
+.hljs-keyword, .hljs-selector-tag, .hljs-literal { color: var(--vscode-debugTokenExpression-name, #c586c0); }
+.hljs-string, .hljs-attr { color: var(--vscode-debugTokenExpression-string, #ce9178); }
+.hljs-number { color: var(--vscode-debugTokenExpression-number, #b5cea8); }
+.hljs-comment { color: var(--vscode-descriptionForeground); font-style: italic; }
+.hljs-title, .hljs-function .hljs-title { color: var(--vscode-symbolIcon-functionForeground, #dcdcaa); }
+.hljs-built_in, .hljs-type { color: var(--vscode-symbolIcon-classForeground, #4ec9b0); }
+
+/* ---- review affordances ---- */
+[data-line] { position: relative; }
+
+/* The button is a CHILD of the block it belongs to (GitHub's gutter-cell trick),
+   so the pointer stays inside the hover target on the way to it. */
+.ir-anchor, .ir-row { position: relative; }
+
+.ir-add {
+  position: absolute;
+  left: -30px;
+  top: 0.15em;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  line-height: 20px;
+  font-size: 15px;
+  border-radius: 4px;
+  color: var(--vscode-button-foreground);
+  background: var(--vscode-button-background);
+  opacity: 0;
+  transition: opacity 80ms linear;
+  z-index: 4;
+}
+
+/* Bridges the 8px gap between the block edge and the button, so crossing it
+   does not momentarily drop :hover and make the button blink out. */
+.ir-add::before {
+  content: '';
+  position: absolute;
+  left: -4px;
+  right: -12px;
+  top: -6px;
+  bottom: -6px;
+}
+
+.ir-anchor:hover > .ir-add,
+.ir-row:hover > .ir-add,
+.ir-add:hover,
+.ir-add:focus-visible { opacity: 1; }
+
+.ir-add:focus-visible { outline: 1px solid var(--vscode-focusBorder); }
+
+/* `button:hover` above is 0-1-1 and would otherwise repaint this with the grey
+   secondary hover colour. Keep the primary palette. */
+.ir-add:hover {
+  background: var(--vscode-button-hoverBackground, var(--vscode-button-background));
+  color: var(--vscode-button-foreground);
+}
+
+
+.ir-comments { margin: 0 0 var(--ir-gap); }
+
+.ir-card {
+  margin: 6px 0;
+  padding: 8px 12px;
+  border-left: 3px solid var(--vscode-editorInfo-foreground, #3794ff);
+  border-radius: 0 4px 4px 0;
+  background: var(--vscode-editorWidget-background, rgba(128, 128, 128, 0.12));
+  font-size: 13px;
+}
+.ir-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.65;
+}
+.ir-actions { margin-left: auto; display: flex; gap: 4px; }
+.ir-actions button { padding: 1px 7px; font-size: 11px; }
+.ir-body { white-space: pre-wrap; }
+
+.ir-composer {
+  margin: 8px 0 var(--ir-gap);
+  padding: 10px 12px;
+  border: 1px solid var(--vscode-focusBorder);
+  border-radius: 6px;
+  background: var(--vscode-editorWidget-background, rgba(128, 128, 128, 0.12));
+}
+
+textarea {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 64px;
+  padding: 6px 8px;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--vscode-input-foreground);
+  background: var(--vscode-input-background);
+  border: 1px solid var(--vscode-input-border, transparent);
+  border-radius: 4px;
+}
+textarea:focus { outline: 1px solid var(--vscode-focusBorder); }
+
+.ir-bar { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+.ir-hint { margin-left: auto; font-size: 11px; opacity: 0.5; }
+
+/* ---- mermaid ---- */
+#content pre.ir-mermaid {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+  /* Match the editor canvas: white on a light theme, dark on a dark one. */
+  background: var(--vscode-editor-background);
+  border: 1px solid var(--vscode-panel-border, rgba(128, 128, 128, 0.25));
+  border-radius: 6px;
+}
+#content pre.ir-mermaid svg { background: transparent !important; }
+#content pre.ir-mermaid.ir-mermaid-done { overflow-x: auto; }
+#content pre.ir-mermaid svg { max-width: 100%; height: auto; }
+#content pre.ir-mermaid.ir-mermaid-error {
+  display: block;
+  white-space: pre;
+  border-left: 3px solid var(--vscode-editorError-foreground, #f14c4c);
+}
+.ir-mermaid-msg {
+  margin: -12px 0 var(--ir-gap);
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--vscode-editorError-foreground, #f14c4c);
+  background: var(--vscode-inputValidation-errorBackground, rgba(241, 76, 76, 0.1));
+  border-radius: 0 0 4px 4px;
+}
+
+/* ---- navigation ---- */
+#nav { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+#nav button { padding: 2px 8px; }
+#btn-prev, #btn-next { font-size: 13px; line-height: 16px; min-width: 26px; }
+#btn-list:disabled { opacity: 0.45; cursor: default; }
+
+#list {
+  position: fixed;
+  top: 36px;
+  right: 16px;
+  z-index: 30;
+  width: min(420px, 60vw);
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 4px;
+  border: 1px solid var(--vscode-widget-border, rgba(128, 128, 128, 0.35));
+  border-radius: 6px;
+  background: var(--vscode-editorWidget-background, var(--vscode-editor-background));
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+.ir-list-item {
+  display: flex;
+  gap: 10px;
+  padding: 5px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.ir-list-item:hover { background: var(--vscode-list-hoverBackground); }
+.ir-list-item.active {
+  background: var(--vscode-list-activeSelectionBackground);
+  color: var(--vscode-list-activeSelectionForeground);
+}
+.ir-list-line { flex: none; width: 46px; opacity: 0.6; font-variant-numeric: tabular-nums; }
+.ir-list-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* right-edge rail showing where comments sit in the document */
+#rail {
+  position: fixed;
+  top: 34px;
+  right: 2px;
+  bottom: 0;
+  width: 12px;
+  z-index: 5;
+  pointer-events: none;
+}
+.ir-dot {
+  position: absolute;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--vscode-editorInfo-foreground, #3794ff);
+  opacity: 0.55;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.ir-dot:hover {
+  opacity: 1;
+  transform: scale(1.35);
+  /* same override as .ir-add: do not inherit the grey secondary hover */
+  background: var(--vscode-editorInfo-foreground, #3794ff);
+}
+.ir-dot.active { opacity: 1; box-shadow: 0 0 0 2px var(--vscode-focusBorder); }
+
+@keyframes ir-flash-kf {
+  from { background: var(--vscode-editor-findMatchHighlightBackground, rgba(255, 200, 0, 0.5)); }
+  to { background: transparent; }
+}
+.ir-flash { animation: ir-flash-kf 1.2s ease-out; border-radius: 4px; }

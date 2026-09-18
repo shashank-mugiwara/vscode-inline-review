@@ -1,0 +1,273 @@
+{
+  "name": "inline-review",
+  "displayName": "Inline Review",
+  "description": "Leave inline comments on any file (including diff views), then copy them all as file:line notes for Claude Code.",
+  "version": "0.1.0",
+  "publisher": "local",
+  "private": false,
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Inline Review",
+      "properties": {
+        "inlineReview.extensions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            ".md",
+            ".markdown"
+          ],
+          "markdownDescription": "File extensions that get the inline-comment gutter. Ignored when `#inlineReview.allFiles#` is on."
+        },
+        "inlineReview.allFiles": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable the inline-comment gutter on every file, not just the extensions listed above."
+        },
+        "inlineReview.includeSnippet": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include the commented source lines in the copied output, so Claude sees what you pointed at."
+        },
+        "inlineReview.snippetMaxLines": {
+          "type": "number",
+          "default": 8,
+          "description": "Maximum source lines to quote per comment."
+        },
+        "inlineReview.focusClaudeAfterCopy": {
+          "type": "boolean",
+          "default": true,
+          "description": "After copying, focus the Claude Code input so you can paste straight away."
+        },
+        "inlineReview.reviewFileName": {
+          "type": "string",
+          "default": "CLAUDE-REVIEW.md",
+          "description": "Filename used by the 'Write Comments to File' command, relative to the workspace root."
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "inlineReview.createComment",
+        "title": "Add Comment",
+        "enablement": "!commentIsEmpty"
+      },
+      {
+        "command": "inlineReview.replyComment",
+        "title": "Reply",
+        "enablement": "!commentIsEmpty"
+      },
+      {
+        "command": "inlineReview.editComment",
+        "title": "Edit",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "inlineReview.saveEdit",
+        "title": "Save"
+      },
+      {
+        "command": "inlineReview.cancelEdit",
+        "title": "Cancel"
+      },
+      {
+        "command": "inlineReview.deleteComment",
+        "title": "Delete",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "inlineReview.deleteThread",
+        "title": "Delete Thread",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "inlineReview.copyAll",
+        "title": "Inline Review: Copy All Comments"
+      },
+      {
+        "command": "inlineReview.copyCurrentFile",
+        "title": "Inline Review: Copy Comments for Current File"
+      },
+      {
+        "command": "inlineReview.writeToFile",
+        "title": "Inline Review: Write Comments to File"
+      },
+      {
+        "command": "inlineReview.clearAll",
+        "title": "Inline Review: Clear All Comments"
+      },
+      {
+        "command": "inlineReview.commentAtCursor",
+        "title": "Inline Review: Comment on Current Line"
+      },
+      {
+        "command": "inlineReview.openPreview",
+        "title": "Inline Review: Open Markdown Review Preview"
+      },
+      {
+        "command": "inlineReview.revealComment",
+        "title": "Inline Review: Go to Comment"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "inlineReview.createComment",
+          "when": "false"
+        },
+        {
+          "command": "inlineReview.replyComment",
+          "when": "false"
+        },
+        {
+          "command": "inlineReview.editComment",
+          "when": "false"
+        },
+        {
+          "command": "inlineReview.saveEdit",
+          "when": "false"
+        },
+        {
+          "command": "inlineReview.cancelEdit",
+          "when": "false"
+        },
+        {
+          "command": "inlineReview.deleteComment",
+          "when": "false"
+        },
+        {
+          "command": "inlineReview.deleteThread",
+          "when": "false"
+        },
+        {
+          "command": "inlineReview.revealComment",
+          "when": "false"
+        }
+      ],
+      "comments/commentThread/context": [
+        {
+          "command": "inlineReview.createComment",
+          "group": "inline@1",
+          "when": "commentController == inlineReview && commentThreadIsEmpty"
+        },
+        {
+          "command": "inlineReview.replyComment",
+          "group": "inline@1",
+          "when": "commentController == inlineReview && !commentThreadIsEmpty"
+        }
+      ],
+      "comments/commentThread/title": [
+        {
+          "command": "inlineReview.deleteThread",
+          "group": "navigation@1",
+          "when": "commentController == inlineReview"
+        }
+      ],
+      "comments/comment/title": [
+        {
+          "command": "inlineReview.editComment",
+          "group": "group@1",
+          "when": "commentController == inlineReview && comment == canEdit"
+        },
+        {
+          "command": "inlineReview.deleteComment",
+          "group": "group@2",
+          "when": "commentController == inlineReview && comment == canEdit"
+        }
+      ],
+      "comments/comment/context": [
+        {
+          "command": "inlineReview.cancelEdit",
+          "group": "inline@1",
+          "when": "commentController == inlineReview"
+        },
+        {
+          "command": "inlineReview.saveEdit",
+          "group": "inline@2",
+          "when": "commentController == inlineReview"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "inlineReview.copyAll",
+        "key": "cmd+k cmd+y",
+        "mac": "cmd+k cmd+y"
+      },
+      {
+        "command": "inlineReview.commentAtCursor",
+        "key": "cmd+k c",
+        "mac": "cmd+k c"
+      }
+    ],
+    "customEditors": [
+      {
+        "viewType": "inlineReview.markdownPreview",
+        "displayName": "Markdown Review Preview",
+        "priority": "option",
+        "selector": [
+          {
+            "filenamePattern": "*.md"
+          },
+          {
+            "filenamePattern": "*.markdown"
+          }
+        ]
+      }
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "inlineReview.comments",
+          "name": "Review Comments",
+          "icon": "$(comment)"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "inlineReview.comments",
+        "contents": "No review comments yet.\n\nOpen a markdown file and hover a block to add one."
+      }
+    ]
+  },
+  "dependencies": {
+    "highlight.js": "^11.0.0",
+    "markdown-it": "^14.0.0"
+  },
+  "scripts": {
+    "test": "NODE_PATH=./test/stubs node test/webview.test.js"
+  },
+  "devDependencies": {
+    "jsdom": "^29.1.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shashank-mugiwara/vscode-inline-review.git"
+  },
+  "bugs": {
+    "url": "https://github.com/shashank-mugiwara/vscode-inline-review/issues"
+  },
+  "homepage": "https://github.com/shashank-mugiwara/vscode-inline-review#readme",
+  "keywords": [
+    "markdown",
+    "review",
+    "comments",
+    "claude",
+    "claude-code",
+    "preview",
+    "mermaid"
+  ]
+}
