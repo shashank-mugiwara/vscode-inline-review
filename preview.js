@@ -8,6 +8,12 @@ function nonce() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
+/** Languages highlightAuto may pick from for an unlabelled fence. */
+const AUTO_LANGS = [
+  'javascript', 'typescript', 'python', 'java', 'go', 'rust', 'bash', 'shell',
+  'json', 'yaml', 'sql', 'xml', 'css', 'dockerfile', 'ini',
+];
+
 /** markdown-it configured to stamp every block with its source line. */
 function createRenderer() {
   const hljs = require('highlight.js');
@@ -16,14 +22,28 @@ function createRenderer() {
     linkify: true,
     breaks: false,
     highlight(code, lang) {
-      if (lang && hljs.getLanguage(lang)) {
+      const name = (lang || '').trim().split(/[\s:{,]/)[0].toLowerCase();
+      if (name && hljs.getLanguage(name)) {
         try {
-          return hljs.highlight(code, { language: lang, ignoreIllegals: true }).value;
+          return hljs.highlight(code, { language: name, ignoreIllegals: true }).value;
+        } catch (_) { /* fall through to auto-detect */ }
+      }
+      // An unlabelled fence still deserves colour — guess, but only from the
+      // common languages, so prose fences are not painted as code.
+      if (!name) {
+        try {
+          const auto = hljs.highlightAuto(code, AUTO_LANGS);
+          if (auto.relevance >= 8) return auto.value;
         } catch (_) { /* fall through */ }
       }
       return md.utils.escapeHtml(code);
     },
   });
+
+  require('./frontmatter').install(md, () =>
+    vscode.workspace.getConfiguration('inlineReview').get('frontmatterAsTable', true) !== false);
+  require('./callouts').install(md, () =>
+    vscode.workspace.getConfiguration('inlineReview').get('callouts', true) !== false);
 
   // Only tags a comment <div> may legally follow (or sit inside). Table internals are
   // excluded: a div after a <tr> gets hoisted out of the table by the parser.
@@ -62,7 +82,11 @@ function createRenderer() {
       const inner = orig
         ? orig(tokens, idx, opts, env, self)
         : md.renderer.renderToken(tokens, idx, opts);
-      return `<div class="ir-block" data-line="${line}">${inner}</div>`;
+      // html_block is not code and must not get code chrome.
+      if (rule === 'html_block') return `<div class="ir-block" data-line="${line}">${inner}</div>`;
+      const lang = rule === 'fence' ? (t.info || '').trim().split(/\s+/)[0].toLowerCase() : '';
+      return `<div class="ir-block ir-code" data-lang="${md.utils.escapeHtml(lang)}"`
+        + ` data-line="${line}">${inner}</div>`;
     };
   }
 
@@ -120,11 +144,20 @@ class MarkdownReviewPreview {
     if (!this.panels.has(key)) this.panels.set(key, new Set());
     this.panels.get(key).add(panel);
 
+    const settings = () => {
+      const c = vscode.workspace.getConfiguration('inlineReview');
+      return {
+        codeBlockChrome: c.get('codeBlockChrome', true) !== false,
+        mermaidHeight: Number(c.get('mermaidHeight', 520)) || 520,
+      };
+    };
+
     const pushContent = () => {
       webview.postMessage({
         type: 'update',
         html: this.renderBody(document, webview, docDir),
         comments: this.store.listFor(document.uri),
+        settings: settings(),
       });
     };
     const pushComments = () => {
@@ -136,6 +169,9 @@ class MarkdownReviewPreview {
       if (e.document.uri.toString() === document.uri.toString()) pushContent();
     }));
     subs.push(this.store.onChange(() => pushComments()));
+    subs.push(vscode.workspace.onDidChangeConfiguration((e) => {
+      if (e.affectsConfiguration('inlineReview')) pushContent();
+    }));
 
     subs.push(webview.onDidReceiveMessage(async (msg) => {
       switch (msg.type) {
@@ -166,6 +202,13 @@ class MarkdownReviewPreview {
           break;
         case 'copyAll':
           await vscode.commands.executeCommand('inlineReview.copyAll');
+          break;
+        case 'copyFile':
+          await vscode.commands.executeCommand('inlineReview.copyFileComments', document.uri);
+          break;
+        case 'copyCode':
+          await vscode.env.clipboard.writeText(String(msg.text || ''));
+          vscode.window.setStatusBarMessage('$(clippy) Code block copied', 2000);
           break;
       }
     }));
@@ -231,15 +274,28 @@ class MarkdownReviewPreview {
 </head>
 <body>
 <div id="toolbar">
-  <button id="btn-copy" title="Copy all review comments">Copy comments</button>
+  <button id="btn-copy-file" title="Copy the review comments on this file">Copy this file</button>
+  <button id="btn-copy" title="Copy review comments from every file you have commented on">Copy all files</button>
   <button id="btn-source" title="Open the markdown source beside this">Open source</button>
+  <button id="btn-find" title="Find in this document (⌘F)">Find</button>
   <span id="nav">
     <button id="btn-prev" title="Previous comment (⌥↑)">↑</button>
     <button id="btn-next" title="Next comment (⌥↓)">↓</button>
     <button id="btn-list" title="List all comments in this file">0 comments</button>
   </span>
 </div>
+<div id="find" hidden>
+  <input id="find-input" type="text" placeholder="Find" spellcheck="false" aria-label="Find" />
+  <button id="find-case" class="toggle" title="Match case">Aa</button>
+  <button id="find-word" class="toggle" title="Match whole word">ab</button>
+  <button id="find-regex" class="toggle" title="Use regular expression">.*</button>
+  <span id="find-count">No results</span>
+  <button id="find-prev" title="Previous match (⇧⏎)">↑</button>
+  <button id="find-next" title="Next match (⏎)">↓</button>
+  <button id="find-close" title="Close (Esc)">✕</button>
+</div>
 <div id="list" hidden></div>
+<div id="zoom" hidden><div id="zoom-stage"></div></div>
 <div id="rail"></div>
 <div id="content"></div>
 <script nonce="${n}" src="${uri('media', 'mermaid.min.js')}"></script>

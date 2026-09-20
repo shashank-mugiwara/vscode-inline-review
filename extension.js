@@ -364,13 +364,22 @@ function activate(context) {
 
   reg('inlineReview.copyAll', () => copy(collect(null), 'to copy'));
 
+  // Called by the preview toolbar, which knows its own document but is not an
+  // active text editor, so `copyCurrentFile` cannot see it.
+  reg('inlineReview.copyFileComments', (uri) => {
+    if (!uri) return;
+    return copy(collect(uri), 'on this file');
+  });
+
   reg('inlineReview.copyCurrentFile', () => {
     const ed = vscode.window.activeTextEditor;
-    if (!ed) {
+    const input = vscode.window.tabGroups?.activeTabGroup?.activeTab?.input;
+    const uri = ed ? ed.document.uri : (input && input.uri);
+    if (!uri) {
       vscode.window.showInformationMessage('Inline Review: no active editor.');
       return;
     }
-    return copy(collect(ed.document.uri), 'on this file');
+    return copy(collect(uri), 'on this file');
   });
 
   reg('inlineReview.writeToFile', async () => {

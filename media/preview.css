@@ -71,26 +71,75 @@ button.primary:hover { background: var(--vscode-button-hoverBackground); }
 #content a { color: var(--vscode-textLink-foreground); text-decoration: none; }
 #content a:hover { text-decoration: underline; }
 #content code {
-  font-family: var(--vscode-editor-font-family, monospace);
-  font-size: 0.9em;
-  padding: 0.15em 0.35em;
-  border-radius: 3px;
-  background: var(--vscode-textCodeBlock-background, rgba(128, 128, 128, 0.17));
+  font-family: var(--vscode-editor-font-family, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 0.875em;
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  background: var(--ir-inline-bg);
 }
 #content pre {
   margin: 0 0 var(--ir-gap);
   padding: 12px 14px;
   overflow: auto;
+  border: 1px solid var(--ir-code-border);
   border-radius: 6px;
-  background: var(--vscode-textCodeBlock-background, rgba(128, 128, 128, 0.12));
+  color: var(--ir-code-fg);
+  background: var(--ir-code-bg);
+  font-size: 0.875em;
+  line-height: 1.55;
+  tab-size: 2;
 }
-#content pre code { padding: 0; background: none; }
+#content pre code {
+  padding: 0;
+  font-size: 1em;
+  color: inherit;
+  background: none;
+}
+
+/* A fenced block with chrome: the header owns the top border, the <pre> the rest. */
+.ir-code-chrome > pre {
+  margin-top: 0;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+.ir-code-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 10px;
+  border: 1px solid var(--ir-code-border);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  background: var(--ir-code-head);
+  color: var(--vscode-descriptionForeground);
+  font-size: 11px;
+}
+.ir-code-lang {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+}
+.ir-code-copy {
+  margin-left: auto;
+  padding: 0 7px;
+  font-size: 11px;
+  line-height: 18px;
+  opacity: 0;
+  transition: opacity 80ms linear;
+}
+.ir-code-chrome:hover .ir-code-copy,
+.ir-code-copy:focus-visible { opacity: 1; }
 #content blockquote {
-  padding: 0 1em;
-  border-left: 3px solid var(--vscode-textBlockQuote-border, rgba(128, 128, 128, 0.5));
-  background: var(--vscode-textBlockQuote-background, transparent);
-  opacity: 0.9;
+  /* `padding: 0 1em` left the text jammed against the band's top and bottom
+     edges, and the theme's own quote border is often invisible on its own
+     background. Both are pinned here instead of inherited. */
+  padding: 10px 16px;
+  border-left: 3px solid var(--ir-quote-rule);
+  border-radius: 0 4px 4px 0;
+  background: var(--ir-quote-bg);
+  color: var(--vscode-foreground);
 }
+#content blockquote > :last-child { margin-bottom: 0; }
 #content table { border-collapse: collapse; }
 #content th, #content td {
   padding: 5px 12px;
@@ -100,13 +149,103 @@ button.primary:hover { background: var(--vscode-button-hoverBackground); }
 #content img { max-width: 100%; }
 #content hr { border: none; border-top: 1px solid var(--vscode-panel-border, rgba(128, 128, 128, 0.35)); }
 
-/* highlight.js — mapped onto editor token colours */
-.hljs-keyword, .hljs-selector-tag, .hljs-literal { color: var(--vscode-debugTokenExpression-name, #c586c0); }
-.hljs-string, .hljs-attr { color: var(--vscode-debugTokenExpression-string, #ce9178); }
-.hljs-number { color: var(--vscode-debugTokenExpression-number, #b5cea8); }
-.hljs-comment { color: var(--vscode-descriptionForeground); font-style: italic; }
-.hljs-title, .hljs-function .hljs-title { color: var(--vscode-symbolIcon-functionForeground, #dcdcaa); }
-.hljs-built_in, .hljs-type { color: var(--vscode-symbolIcon-classForeground, #4ec9b0); }
+/* ---- syntax highlighting ----
+   The previous mapping borrowed six `--vscode-debugTokenExpression-*` variables,
+   which are tuned for the debug panel and are near-invisible on a light theme.
+   These are full GitHub Light / GitHub Dark token sets instead, chosen per theme
+   class so a light editor gets a light-theme palette on a light code surface. */
+body {
+  --ir-code-bg: #f6f8fa;
+  --ir-code-border: #d0d7de;
+  --ir-code-fg: #1f2328;
+  --ir-code-head: #eaeef2;
+  --ir-inline-bg: rgba(175, 184, 193, 0.2);
+  --ir-hl-comment: #6a737d;
+  --ir-hl-keyword: #cf222e;
+  --ir-hl-string: #0a3069;
+  --ir-hl-number: #0550ae;
+  --ir-hl-function: #8250df;
+  --ir-hl-type: #953800;
+  --ir-hl-attr: #0550ae;
+  --ir-hl-tag: #116329;
+  --ir-hl-add-fg: #116329;
+  --ir-hl-add-bg: #dafbe1;
+  --ir-hl-del-fg: #82071e;
+  --ir-hl-del-bg: #ffebe9;
+  --ir-find-bg: rgba(255, 223, 93, 0.55);
+  --ir-find-cur-bg: #ff9632;
+  --ir-find-cur-fg: #1f2328;
+  --ir-quote-rule: #d0d7de;
+  --ir-quote-bg: rgba(175, 184, 193, 0.12);
+  --ir-tone-info: #0969da;
+  --ir-tone-tip: #1a7f37;
+  --ir-tone-warn: #9a6700;
+  --ir-tone-danger: #cf222e;
+  --ir-tone-important: #8250df;
+  --ir-tone-neutral: #57606a;
+  --ir-tone-wash: 0.07;
+}
+
+body.vscode-dark, body.vscode-high-contrast {
+  --ir-code-bg: #161b22;
+  --ir-code-border: #30363d;
+  --ir-code-fg: #e6edf3;
+  --ir-code-head: #1f242c;
+  --ir-inline-bg: rgba(110, 118, 129, 0.4);
+  --ir-hl-comment: #8b949e;
+  --ir-hl-keyword: #ff7b72;
+  --ir-hl-string: #a5d6ff;
+  --ir-hl-number: #79c0ff;
+  --ir-hl-function: #d2a8ff;
+  --ir-hl-type: #ffa657;
+  --ir-hl-attr: #79c0ff;
+  --ir-hl-tag: #7ee787;
+  --ir-hl-add-fg: #aff5b4;
+  --ir-hl-add-bg: #033a16;
+  --ir-hl-del-fg: #ffdcd7;
+  --ir-hl-del-bg: #67060c;
+  --ir-find-bg: rgba(234, 92, 0, 0.45);
+  --ir-find-cur-bg: #f5a623;
+  --ir-find-cur-fg: #16191d;
+  --ir-quote-rule: #3d444d;
+  --ir-quote-bg: rgba(110, 118, 129, 0.12);
+  --ir-tone-info: #4493f8;
+  --ir-tone-tip: #3fb950;
+  --ir-tone-warn: #d29922;
+  --ir-tone-danger: #f85149;
+  --ir-tone-important: #ab7df8;
+  --ir-tone-neutral: #9198a1;
+  --ir-tone-wash: 0.13;
+}
+
+body.vscode-high-contrast { --ir-code-border: var(--vscode-contrastBorder, #6fc3df); }
+body.vscode-high-contrast-light { --ir-code-border: var(--vscode-contrastBorder, #0f4a85); }
+
+.hljs-comment, .hljs-quote { color: var(--ir-hl-comment); font-style: italic; }
+.hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-doctag,
+.hljs-section, .hljs-name, .hljs-subst { color: var(--ir-hl-keyword); }
+.hljs-string, .hljs-regexp, .hljs-meta .hljs-string,
+.hljs-template-variable, .hljs-selector-pseudo { color: var(--ir-hl-string); }
+.hljs-number, .hljs-symbol, .hljs-bullet, .hljs-link,
+.hljs-selector-id, .hljs-selector-class { color: var(--ir-hl-number); }
+.hljs-title, .hljs-title.function_, .hljs-function .hljs-title { color: var(--ir-hl-function); }
+.hljs-built_in, .hljs-type, .hljs-class .hljs-title, .hljs-title.class_,
+.hljs-variable, .hljs-params, .hljs-property { color: var(--ir-hl-type); }
+.hljs-attr, .hljs-attribute, .hljs-meta, .hljs-meta .hljs-keyword,
+.hljs-operator { color: var(--ir-hl-attr); }
+.hljs-tag { color: var(--ir-hl-comment); }
+.hljs-tag .hljs-name { color: var(--ir-hl-tag); }
+.hljs-addition { color: var(--ir-hl-add-fg); background: var(--ir-hl-add-bg); }
+.hljs-deletion { color: var(--ir-hl-del-fg); background: var(--ir-hl-del-bg); }
+.hljs-emphasis { font-style: italic; }
+.hljs-strong { font-weight: 600; }
+
+/* ---- find ---- */
+::highlight(ir-find) { background-color: var(--ir-find-bg); }
+::highlight(ir-find-current) {
+  background-color: var(--ir-find-cur-bg);
+  color: var(--ir-find-cur-fg);
+}
 
 /* ---- review affordances ---- */
 [data-line] { position: relative; }
@@ -210,18 +349,91 @@ textarea:focus { outline: 1px solid var(--vscode-focusBorder); }
 .ir-hint { margin-left: auto; font-size: 11px; opacity: 0.5; }
 
 /* ---- mermaid ---- */
-#content pre.ir-mermaid {
-  display: flex;
-  justify-content: center;
+/* The overlay moves a diagram OUT of #content, so every rule it depends on has
+   to be written for both homes or the expanded copy loses its box entirely. */
+#content pre.ir-mermaid,
+#zoom pre.ir-mermaid {
+  display: block;
   padding: 16px;
   /* Match the editor canvas: white on a light theme, dark on a dark one. */
   background: var(--vscode-editor-background);
   border: 1px solid var(--vscode-panel-border, rgba(128, 128, 128, 0.25));
   border-radius: 6px;
 }
-#content pre.ir-mermaid svg { background: transparent !important; }
-#content pre.ir-mermaid.ir-mermaid-done { overflow-x: auto; }
-#content pre.ir-mermaid svg { max-width: 100%; height: auto; }
+#content pre.ir-mermaid svg,
+#zoom pre.ir-mermaid svg { background: transparent !important; }
+#content pre.ir-mermaid.ir-mermaid-done,
+#zoom pre.ir-mermaid.ir-mermaid-done { padding: 0; overflow: hidden; }
+
+/* A rendered diagram lives in a fixed-height viewport it can be panned inside,
+   rather than being scaled down to the text column and becoming unreadable. */
+.ir-mm-tools {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--vscode-panel-border, rgba(128, 128, 128, 0.25));
+  background: var(--vscode-editorWidget-background, rgba(128, 128, 128, 0.08));
+}
+.ir-mm-tools button {
+  min-width: 26px;
+  padding: 1px 7px;
+  font-size: 12px;
+  line-height: 18px;
+}
+.ir-mm-readout {
+  min-width: 52px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.ir-mm-viewport {
+  position: relative;
+  overflow: hidden;
+  touch-action: none;
+  cursor: grab;
+  resize: vertical;               /* drag the bottom edge for a taller diagram */
+  min-height: 180px;
+  background: var(--vscode-editor-background);
+}
+.ir-mm-viewport.dragging { cursor: grabbing; }
+.ir-mm-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+.ir-mm-canvas svg { max-width: none !important; height: auto; display: block; }
+
+/* full-window overlay */
+#zoom {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  padding: 24px;
+  background: var(--vscode-editor-background);
+  box-shadow: inset 0 0 0 1px var(--vscode-widget-border, rgba(128, 128, 128, 0.3));
+}
+#zoom[hidden] { display: none; }
+#zoom-stage { display: flex; flex: 1; min-width: 0; min-height: 0; }
+#zoom pre.ir-mermaid.ir-mm-full {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  margin: 0;
+  min-width: 0;
+  min-height: 0;
+}
+#zoom .ir-mm-full .ir-mm-viewport {
+  flex: 1;
+  height: auto !important;
+  min-height: 0;
+  resize: none;
+}
+.ir-mm-placeholder { display: none; }
+
 #content pre.ir-mermaid.ir-mermaid-error {
   display: block;
   white-space: pre;
@@ -308,3 +520,192 @@ textarea:focus { outline: 1px solid var(--vscode-focusBorder); }
   to { background: transparent; }
 }
 .ir-flash { animation: ir-flash-kf 1.2s ease-out; border-radius: 4px; }
+
+
+/* ---- frontmatter ---- */
+.ir-frontmatter { margin: 0 0 calc(var(--ir-gap) * 1.5); }
+details.ir-fm {
+  border: 1px solid var(--ir-code-border);
+  border-radius: 6px;
+  background: var(--ir-code-bg);
+  overflow: hidden;
+}
+details.ir-fm > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  user-select: none;
+  background: var(--ir-code-head);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--vscode-descriptionForeground);
+}
+details.ir-fm > summary::-webkit-details-marker { display: none; }
+details.ir-fm > summary::before {
+  content: '\25B8';
+  font-size: 13px;
+  line-height: 1;
+  opacity: 0.8;
+  transition: transform 100ms ease;
+}
+details.ir-fm[open] > summary::before { transform: rotate(90deg); }
+.ir-fm-count { margin-left: auto; opacity: 0.8; }
+
+#content table.ir-fm-table {
+  width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  table-layout: fixed;
+}
+#content table.ir-fm-table th,
+#content table.ir-fm-table td {
+  padding: 5px 12px;
+  border: none;
+  border-top: 1px solid var(--ir-code-border);
+  text-align: left;
+  vertical-align: top;
+  word-break: break-word;
+}
+#content table.ir-fm-table tr:first-child th,
+#content table.ir-fm-table tr:first-child td { border-top: none; }
+#content table.ir-fm-table th {
+  width: 190px;
+  font-weight: 600;
+  font-family: var(--vscode-editor-font-family, monospace);
+  color: var(--vscode-descriptionForeground);
+  background: var(--ir-code-head);
+}
+#content table.ir-fm-table td {
+  color: var(--vscode-foreground);
+  background: transparent;
+}
+.ir-fm-empty { opacity: 0.45; }
+#content .ir-fm-list { margin: 0; padding-left: 18px; }
+#content .ir-fm-raw code { background: none; }
+.ir-fm-raw {
+  margin: 0;
+  border: 1px solid var(--ir-code-border);
+  border-radius: 6px;
+}
+
+/* ---- find bar ---- */
+#find {
+  position: fixed;
+  top: 40px;
+  right: 18px;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 6px;
+  border: 1px solid var(--vscode-widget-border, rgba(128, 128, 128, 0.35));
+  border-radius: 6px;
+  background: var(--vscode-editorWidget-background, var(--vscode-editor-background));
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+}
+#find[hidden] { display: none; }
+#find-input {
+  width: 220px;
+  padding: 3px 7px;
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--vscode-input-foreground);
+  background: var(--vscode-input-background);
+  border: 1px solid var(--vscode-input-border, transparent);
+  border-radius: 4px;
+}
+#find-input:focus { outline: 1px solid var(--vscode-focusBorder); }
+#find.invalid #find-input {
+  border-color: var(--vscode-inputValidation-errorBorder, #be1100);
+  background: var(--vscode-inputValidation-errorBackground, var(--vscode-input-background));
+}
+#find button { padding: 2px 6px; min-width: 24px; }
+#find .toggle {
+  font-family: var(--vscode-editor-font-family, monospace);
+  font-size: 11px;
+  background: transparent;
+  border-color: transparent;
+}
+#find .toggle:hover { background: var(--vscode-toolbar-hoverBackground, rgba(128, 128, 128, 0.2)); }
+#find .toggle.on {
+  color: var(--vscode-inputOption-activeForeground, var(--vscode-foreground));
+  background: var(--vscode-inputOption-activeBackground, rgba(55, 148, 255, 0.28));
+  border-color: var(--vscode-inputOption-activeBorder, var(--vscode-focusBorder));
+}
+#find-count {
+  min-width: 78px;
+  padding: 0 4px;
+  font-size: 11px;
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+}
+
+
+/* ---- callouts ----
+   `> [!note] Title` used to render as a blockquote with the marker left in the
+   text. The tone drives one accent colour, used for the rule, the icon and the
+   title; the body stays ordinary document text so code and links read normally. */
+#content .ir-callout {
+  --ir-tone: var(--ir-tone-neutral);
+  margin: 0 0 var(--ir-gap);
+  border: 1px solid var(--ir-quote-rule);
+  border-left: 3px solid var(--ir-tone);
+  border-radius: 0 6px 6px 0;
+  background: color-mix(in srgb, var(--ir-tone) calc(var(--ir-tone-wash) * 100%), transparent);
+  overflow: hidden;
+}
+/* color-mix is recent; without it the callout still reads as a toned block. */
+@supports not (background: color-mix(in srgb, red 10%, transparent)) {
+  #content .ir-callout { background: var(--ir-quote-bg); }
+}
+
+#content .ir-cal-info { --ir-tone: var(--ir-tone-info); }
+#content .ir-cal-tip { --ir-tone: var(--ir-tone-tip); }
+#content .ir-cal-warn { --ir-tone: var(--ir-tone-warn); }
+#content .ir-cal-danger { --ir-tone: var(--ir-tone-danger); }
+#content .ir-cal-important { --ir-tone: var(--ir-tone-important); }
+#content .ir-cal-neutral { --ir-tone: var(--ir-tone-neutral); }
+
+#content .ir-callout-head,
+#content .ir-callout > summary {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 7px 14px;
+  font-weight: 600;
+  color: var(--ir-tone);
+}
+#content .ir-callout > summary {
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+}
+#content .ir-callout > summary::-webkit-details-marker { display: none; }
+#content .ir-callout > summary::after {
+  content: '\25B8';
+  margin-left: auto;
+  font-size: 11px;
+  opacity: 0.7;
+  transition: transform 100ms ease;
+}
+#content details.ir-callout[open] > summary::after { transform: rotate(90deg); }
+#content .ir-callout > summary:hover { text-decoration: underline; }
+
+#content .ir-callout-icon {
+  flex: none;
+  width: 1.1em;
+  text-align: center;
+  font-weight: 700;
+}
+#content .ir-callout-title { min-width: 0; }
+
+#content .ir-callout-body { padding: 0 14px 2px; }
+#content .ir-callout-head + .ir-callout-body { padding-top: 0; }
+#content .ir-callout-body > :last-child { margin-bottom: 12px; }
+/* A callout's own quote should not disappear into the callout's wash. */
+#content .ir-callout-body blockquote { background: var(--vscode-editor-background); }
+#content .ir-callout-body code { background: var(--ir-inline-bg); }

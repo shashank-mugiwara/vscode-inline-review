@@ -1,8 +1,8 @@
 {
   "name": "inline-review",
   "displayName": "Inline Review",
-  "description": "Leave inline comments on any file (including diff views), then copy them all as file:line notes for Claude Code.",
-  "version": "0.1.0",
+  "description": "Review markdown in a rendered preview: inline comments, real syntax highlighting, find with regex, and zoomable mermaid diagrams. Copy every comment as file:line notes for Claude Code.",
+  "version": "0.3.0",
   "publisher": "local",
   "private": false,
   "license": "MIT",
@@ -55,6 +55,26 @@
           "type": "string",
           "default": "CLAUDE-REVIEW.md",
           "description": "Filename used by the 'Write Comments to File' command, relative to the workspace root."
+        },
+        "inlineReview.frontmatterAsTable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Render a leading YAML frontmatter block as a key/value table instead of letting markdown turn it into a rule and a heading."
+        },
+        "inlineReview.codeBlockChrome": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the language label and a copy button on fenced code blocks in the preview."
+        },
+        "inlineReview.mermaidHeight": {
+          "type": "number",
+          "default": 520,
+          "description": "Maximum height in pixels of the scroll/zoom viewport a mermaid diagram gets. A diagram that needs less is given only what it needs; drag the bottom edge to resize one temporarily."
+        },
+        "inlineReview.callouts": {
+          "type": "boolean",
+          "default": true,
+          "description": "Render `> [!note]`-style callouts (GitHub alerts and Obsidian callouts) as titled, coloured blocks instead of plain blockquotes."
         }
       }
     },
@@ -94,31 +114,46 @@
       },
       {
         "command": "inlineReview.copyAll",
-        "title": "Inline Review: Copy All Comments"
+        "title": "Copy Comments Across All Files",
+        "category": "Inline Review",
+        "icon": "$(files)"
       },
       {
         "command": "inlineReview.copyCurrentFile",
-        "title": "Inline Review: Copy Comments for Current File"
+        "title": "Copy Comments for Current File",
+        "category": "Inline Review",
+        "icon": "$(clippy)"
       },
       {
         "command": "inlineReview.writeToFile",
-        "title": "Inline Review: Write Comments to File"
+        "title": "Write Comments to File",
+        "category": "Inline Review"
       },
       {
         "command": "inlineReview.clearAll",
-        "title": "Inline Review: Clear All Comments"
+        "title": "Clear All Comments",
+        "category": "Inline Review",
+        "icon": "$(clear-all)"
       },
       {
         "command": "inlineReview.commentAtCursor",
-        "title": "Inline Review: Comment on Current Line"
+        "title": "Comment on Current Line",
+        "category": "Inline Review"
       },
       {
         "command": "inlineReview.openPreview",
-        "title": "Inline Review: Open Markdown Review Preview"
+        "title": "Open Markdown Review Preview",
+        "category": "Inline Review"
       },
       {
         "command": "inlineReview.revealComment",
-        "title": "Inline Review: Go to Comment"
+        "title": "Go to Comment",
+        "category": "Inline Review"
+      },
+      {
+        "command": "inlineReview.copyFileComments",
+        "title": "Copy Comments for a File",
+        "category": "Inline Review"
       }
     ],
     "menus": {
@@ -153,6 +188,10 @@
         },
         {
           "command": "inlineReview.revealComment",
+          "when": "false"
+        },
+        {
+          "command": "inlineReview.copyFileComments",
           "when": "false"
         }
       ],
@@ -198,6 +237,23 @@
           "group": "inline@2",
           "when": "commentController == inlineReview"
         }
+      ],
+      "view/title": [
+        {
+          "command": "inlineReview.copyAll",
+          "group": "navigation@1",
+          "when": "view == inlineReview.comments"
+        },
+        {
+          "command": "inlineReview.writeToFile",
+          "group": "navigation@2",
+          "when": "view == inlineReview.comments"
+        },
+        {
+          "command": "inlineReview.clearAll",
+          "group": "navigation@3",
+          "when": "view == inlineReview.comments"
+        }
       ]
     },
     "keybindings": [
@@ -210,6 +266,11 @@
         "command": "inlineReview.commentAtCursor",
         "key": "cmd+k c",
         "mac": "cmd+k c"
+      },
+      {
+        "command": "inlineReview.copyCurrentFile",
+        "key": "cmd+k cmd+shift+y",
+        "mac": "cmd+k cmd+shift+y"
       }
     ],
     "customEditors": [
@@ -268,6 +329,8 @@
     "claude",
     "claude-code",
     "preview",
-    "mermaid"
+    "mermaid",
+    "frontmatter",
+    "syntax-highlighting"
   ]
 }

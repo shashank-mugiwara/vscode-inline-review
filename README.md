@@ -50,14 +50,71 @@ Whatever you jump to flashes briefly so it is not lost after the scroll.
 
 ## Getting comments out
 
+Two buttons in the preview toolbar, because the two jobs are different:
+**Copy this file** takes only the comments on the document in front of you,
+**Copy all files** takes every comment in the workspace — a whole review pass
+across however many files you opened — in one clipboard payload, grouped by file.
+
 | Command | |
 |---|---|
-| Inline Review: Copy All Comments | `⌘K ⌘Y` — copies, then focuses the Claude input |
-| Inline Review: Copy Comments for Current File | |
+| Inline Review: Copy Comments Across All Files | `⌘K ⌘Y` — copies, then focuses the Claude input |
+| Inline Review: Copy Comments for Current File | `⌘K ⌘⇧Y` |
 | Inline Review: Write Comments to File | writes `CLAUDE-REVIEW.md` to `@`-mention |
 | Inline Review: Clear All Comments | |
 | Inline Review: Comment on Current Line | `⌘K C` |
 | Inline Review: Open Markdown Review Preview | |
+
+The same three live on the **Review Comments** sidebar title bar.
+
+## Reading the document
+
+**Frontmatter is a table.** markdown-it has no frontmatter rule, so a leading
+`---` block used to degrade into an `<hr>` plus one bold `<h2>` — the closing
+`---` was being read as a setext underline. The block is now consumed and
+rendered as a collapsible key/value table, with URLs linked and nested keys
+flattened to `parent.child`. Turn it off with `inlineReview.frontmatterAsTable`.
+
+**Code blocks are highlighted properly, in both themes.** Tokens were previously
+mapped onto `--vscode-debugTokenExpression-*`, which is tuned for the debug panel
+and near-invisible on a light theme. The preview now ships full GitHub Light and
+GitHub Dark token sets, selected by the `vscode-light` / `vscode-dark` body class,
+on a code surface with its own background and border. Each fence gets a language
+label and a copy button (`inlineReview.codeBlockChrome` to hide them). An
+unlabelled fence is auto-detected, but only when the guess is confident.
+
+**`⌘F` searches the rendered view.** A find bar with literal, whole-word and
+regular-expression modes, case sensitivity, a live match count and `⏎` /
+`⇧⏎` to step through hits. Matches are painted with the CSS Custom
+Highlight API, so a hit spanning inline markup still highlights and nothing in
+the DOM is rewritten underneath the comment cards. `⌘G` steps without
+reopening the bar; `Esc` closes.
+
+**Callouts render as callouts.** `> [!note] Title`, in both the GitHub alert
+spelling and Obsidian's, becomes a titled, tone-coloured block instead of a
+blockquote with a stray `[!note]` sitting in the text. 26 type names across six
+tones, an optional custom title, and Obsidian's fold markers: `-` starts
+collapsed, `+` starts expanded, neither means not collapsible. An unrecognised
+type is left as an ordinary blockquote. Blocks inside a callout keep their real
+source line numbers, so you can still comment on them. Turn it off with
+`inlineReview.callouts`.
+
+**Mermaid diagrams zoom and pan.** Each rendered diagram sits in its own viewport
+rather than being squashed to the text column: drag to pan, `⌘`/`Ctrl` +
+wheel to zoom at the pointer, wheel to scroll within the diagram (handing the
+wheel back to the page at the edges), `⇧` + wheel to pan sideways,
+double-click to fit, and `⤡` to expand to the full window (`Esc` to come
+back). The toolbar carries zoom out / zoom in / the current scale, which resets
+to 100% when clicked / fit / expand. Drag the bottom edge of a viewport for a
+taller one; `inlineReview.mermaidHeight` is the ceiling, and a diagram that
+needs less room is given only what it needs.
+
+The viewport is measured with `getBoundingClientRect()` rather than
+`clientWidth`/`clientHeight`, because reading a layout property flushes pending
+layout: the earlier version measured the box as it was *before* the diagram was
+reparented into the overlay, so expanding left it at the inline scale and Fit
+looked broken. A `ResizeObserver` re-fits on any size change — overlay, window
+resize, resize grip — unless you have zoomed or panned by hand, in which case
+your chosen view is kept.
 
 Output:
 
