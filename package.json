@@ -2,7 +2,7 @@
   "name": "inline-review",
   "displayName": "Inline Review",
   "description": "Review markdown in a rendered preview: inline comments, real syntax highlighting, find with regex, and zoomable mermaid diagrams. Copy every comment as file:line notes for Claude Code.",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "publisher": "local",
   "private": false,
   "license": "MIT",

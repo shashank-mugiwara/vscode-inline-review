@@ -6,6 +6,7 @@
   const btnList = document.getElementById('btn-list');
   const zoomEl = document.getElementById('zoom');
   const zoomStage = document.getElementById('zoom-stage');
+  const zoomClose = document.getElementById('zoom-close');
   let comments = [];
   let cards = [];      // {id, line, el} in document order
   let cursor = -1;
@@ -581,8 +582,12 @@
       readout,
       mk('+', 'Zoom in', () => ctl.zoomBy(1.25)),
       mk('Fit', 'Fit the whole diagram in view', () => ctl.fit()),
-      mk('⤡', 'Expand to full window', () => expandZoom(pre)),
     );
+    const expandBtn = mk('⤡', 'Expand to full window',
+      () => (pre.irHolder ? collapseZoom() : expandZoom(pre)));
+    expandBtn.className = 'ir-mm-expand';
+    pre.irExpandBtn = expandBtn;
+    tools.append(expandBtn);
     readout.addEventListener('click', (e) => { e.stopPropagation(); ctl.reset(); });
 
     // mermaidHeight is a ceiling, not a fixed height: a short, wide diagram gets
@@ -749,6 +754,10 @@
     pre.classList.add('ir-mm-full');
     zoomStage.appendChild(pre);
     zoomEl.hidden = false;
+    setExpandButton(pre, true);
+    // Esc is handled on `document`, so the overlay takes focus to be sure the
+    // key lands here rather than wherever the reader last clicked.
+    try { zoomEl.focus({ preventScroll: true }); } catch (_) { zoomEl.focus(); }
     if (pre.irZoom) pre.irZoom.fit();
   }
 
@@ -760,12 +769,27 @@
     pre.classList.remove('ir-mm-full');
     if (pre.irHolder && pre.irHolder.parentNode) pre.irHolder.replaceWith(pre);
     pre.irHolder = null;
+    setExpandButton(pre, false);
     if (pre.irZoom) pre.irZoom.fit();
+    pre.scrollIntoView({ block: 'nearest' });
   }
 
+  /** The control that opened the overlay is the one that closes it, so there is
+   *  always a visible way back out. */
+  function setExpandButton(pre, expanded) {
+    const btn = pre.irExpandBtn;
+    if (!btn) return;
+    btn.textContent = expanded ? '✕' : '⤡';
+    btn.title = expanded ? 'Exit full window (Esc)' : 'Expand to full window';
+    btn.classList.toggle('on', expanded);
+  }
+
+  // The stage covers nearly all of the overlay, so a backdrop click alone is not
+  // a findable way out; it stays as a convenience next to the explicit buttons.
   zoomEl?.addEventListener('pointerdown', (e) => {
-    if (e.target === zoomEl) collapseZoom();
+    if (e.target === zoomEl || e.target === zoomStage) collapseZoom();
   });
+  zoomClose?.addEventListener('click', (e) => { e.stopPropagation(); collapseZoom(); });
 
   // ---------------------------------------------------------------- painting
 

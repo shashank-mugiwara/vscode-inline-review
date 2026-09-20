@@ -102,8 +102,11 @@ source line numbers, so you can still comment on them. Turn it off with
 rather than being squashed to the text column: drag to pan, `⌘`/`Ctrl` +
 wheel to zoom at the pointer, wheel to scroll within the diagram (handing the
 wheel back to the page at the edges), `⇧` + wheel to pan sideways,
-double-click to fit, and `⤡` to expand to the full window (`Esc` to come
-back). The toolbar carries zoom out / zoom in / the current scale, which resets
+double-click to fit, and `⤡` to expand to the full window. The same control
+becomes `✕` while the overlay is open, so the way out is the way in; there is
+also a **Close** button in the corner, `Esc`, and a click on the backdrop. The
+overlay takes focus when it opens, so `Esc` lands there rather than wherever you
+last clicked. The toolbar carries zoom out / zoom in / the current scale, which resets
 to 100% when clicked / fit / expand. Drag the bottom edge of a viewport for a
 taller one; `inlineReview.mermaidHeight` is the ceiling, and a diagram that
 needs less room is given only what it needs.

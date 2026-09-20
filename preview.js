@@ -295,7 +295,10 @@ class MarkdownReviewPreview {
   <button id="find-close" title="Close (Esc)">✕</button>
 </div>
 <div id="list" hidden></div>
-<div id="zoom" hidden><div id="zoom-stage"></div></div>
+<div id="zoom" hidden tabindex="-1">
+  <button id="zoom-close" title="Exit full window (Esc)">✕ Close</button>
+  <div id="zoom-stage"></div>
+</div>
 <div id="rail"></div>
 <div id="content"></div>
 <script nonce="${n}" src="${uri('media', 'mermaid.min.js')}"></script>

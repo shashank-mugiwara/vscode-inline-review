@@ -372,6 +372,23 @@ const typeAndSearch = (value) => {
   ok('zoom: mermaidHeight is a cap, not a fixed height',
      /clamp\(Math\.round\(h \* scale\)/.test(js));
 
+  // Expanding used to be a one-way door: the button still said "expand", the
+  // backdrop was covered by the stage, and Esc only worked if the webview
+  // happened to hold focus.
+  const shell = fs.readFileSync(EXT + '/preview.js', 'utf8');
+  ok('zoom: overlay has an explicit close button', shell.includes('id="zoom-close"'));
+  ok('zoom: overlay is focusable so Esc reliably lands', /id="zoom"[^>]*tabindex="-1"/.test(shell));
+  ok('zoom: the expand control toggles rather than only expanding',
+     /pre\.irHolder \? collapseZoom\(\) : expandZoom\(pre\)/.test(js));
+  ok('zoom: the expand control relabels itself when open',
+     /function setExpandButton[\s\S]{0,400}Exit full window/.test(js));
+  ok('zoom: clicking the stage backdrop also closes',
+     /e\.target === zoomEl \|\| e\.target === zoomStage/.test(js));
+  ok('zoom: close button is wired', js.includes("zoomClose?.addEventListener('click'"));
+  ok('zoom: Esc closes the overlay before anything else',
+     /if \(!zoomEl\.hidden\) \{ e\.preventDefault\(\); collapseZoom\(\); return; \}/.test(js));
+  ok('zoom: close button styled', css.includes('#zoom-close'));
+
   // 10. CSS guard: `button:hover` (0-1-1) outranks a bare `.ir-x` (0-1-0) rule, so any
   // custom-coloured button needs its own :hover or it repaints grey on hover.
   for (const sel of ['.ir-add', '.ir-dot']) {
